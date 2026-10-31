@@ -1,7 +1,73 @@
+# RAG distribuido - C2.A2
+#   docker compose up --build
+#   docker compose up --build --scale worker-geracao=3   (varios consumidores na fila)
+
+x-servico: &servico
+  restart: unless-stopped
+  env_file:
+    - path: .env
+      required: false          # sem .env -> modo simulado do LLM
+  environment:
+    URL_REDIS: redis://redis:6379/0
+    URL_INGESTAO: http://ingestao:8001
+    URL_RECUPERACAO: http://recuperacao:8002
+    DIR_DADOS: /app/dados
+
 services:
   redis:
     image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]   # fila sobrevive a reinicios
     ports: ["6379:6379"]
+    volumes: ["redis:/data"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      retries: 10
 
-  # TAREFA 4: acrescente aqui os tres servicos (ingestao, recuperacao, geracao)
-  # depois de escrever um Dockerfile para cada um.
+  # ---------- Servico 1: INGESTAO ----------
+  ingestao:
+    <<: *servico
+    build: { context: ., dockerfile: servicos/ingestao/Dockerfile }
+    ports: ["8001:8001"]
+    volumes: ["dados:/app/dados"]
+    depends_on:
+      redis: { condition: service_healthy }
+
+  worker-ingestao:
+    <<: *servico
+    build: { context: ., dockerfile: servicos/ingestao/Dockerfile }
+    command: ["python", "-m", "servicos.ingestao.worker"]
+    volumes: ["dados:/app/dados"]
+    healthcheck: { disable: true }
+    depends_on:
+      redis: { condition: service_healthy }
+
+  # ---------- Servico 2: RECUPERACAO ----------
+  recuperacao:
+    <<: *servico
+    build: { context: ., dockerfile: servicos/recuperacao/Dockerfile }
+    ports: ["8002:8002"]
+    depends_on:
+      ingestao: { condition: service_healthy }
+
+  # ---------- Servico 3: GERACAO ----------
+  geracao:
+    <<: *servico
+    build: { context: ., dockerfile: servicos/geracao/Dockerfile }
+    ports: ["8003:8003"]
+    depends_on:
+      redis: { condition: service_healthy }
+      recuperacao: { condition: service_healthy }
+
+  worker-geracao:
+    <<: *servico
+    build: { context: ., dockerfile: servicos/geracao/Dockerfile }
+    command: ["python", "-m", "servicos.geracao.worker"]
+    healthcheck: { disable: true }
+    depends_on:
+      redis: { condition: service_healthy }
+      recuperacao: { condition: service_healthy }
+
+volumes:
+  dados:    # indice vetorial persistido (indice.json + vetorizador)
+  redis:    # dados do Redis (AOF)
