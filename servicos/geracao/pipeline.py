@@ -22,6 +22,7 @@ import requests
 from servicos.comum.circuit_breaker import CircuitBreaker, CircuitoAberto
 from servicos.comum.llm import gerar
 from servicos.comum.resiliencia import TentativasEsgotadas, com_retentativa, com_tempo_limite
+from servicos.geracao import caos
 
 log = logging.getLogger("pipeline")
 
@@ -67,6 +68,7 @@ def recuperar(pergunta, top_k):
 
 
 def _gerar(pergunta, contexto):
+    caos.aplicar(caos.modo_atual(), LLM_TIMEOUT)  # so faz algo se o caos estiver ligado
     return gerar(pergunta, contexto)
 
 
