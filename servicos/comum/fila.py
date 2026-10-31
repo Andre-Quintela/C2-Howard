@@ -21,6 +21,8 @@ URL_REDIS = os.getenv("URL_REDIS", "redis://localhost:6379/0")
 
 STREAM_INGESTAO = "stream:ingestao"
 STREAM_PERGUNTAS = "stream:perguntas"
+GRUPO_INGESTAO = "indexadores"
+GRUPO_PERGUNTAS = "geradores"
 
 
 def conectar():
@@ -79,8 +81,11 @@ def consumir(stream, grupo, tratar, consumidor=None, ocioso_ms=60_000):
 
 
 def pendentes(cliente, stream, grupo) -> int:
-    """Quantas mensagens ainda nao foram confirmadas (para /saude)."""
+    """Mensagens ainda nao confirmadas: entregues sem XACK + ainda nao lidas."""
     try:
-        return int(cliente.xpending(stream, grupo)["pending"])
+        for g in cliente.xinfo_groups(stream):
+            if g["name"] == grupo:
+                return int(g.get("pending") or 0) + int(g.get("lag") or 0)
+        return int(cliente.xlen(stream))  # grupo ainda nao criado: nenhum worker leu
     except redis.ResponseError:
         return 0
