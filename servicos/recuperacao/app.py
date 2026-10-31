@@ -117,7 +117,10 @@ def buscar(consulta: Consulta):
                        "score_vetorial": 0.0} for i in itens]
         resultados = reordenar(consulta.pergunta, candidatos, consulta.top_k, peso_vetorial=0.0)
 
-    resultados = [r for r in resultados if r["score"] >= SCORE_MINIMO]
+    # o TF-IDF do kit nao remove stopwords ("de", "que"...), entao exigimos que o
+    # trecho contenha ao menos um termo de conteudo da pergunta
+    resultados = [r for r in resultados
+                  if r["score"] >= SCORE_MINIMO and r["score_lexical"] > 0]
     return {"pergunta": consulta.pergunta, "versao_indice": versao, "modo": modo,
             "indice_em_cache": do_cache, "resultados": resultados}
 

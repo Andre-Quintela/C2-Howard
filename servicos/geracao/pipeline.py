@@ -22,7 +22,7 @@ import requests
 from servicos.comum.circuit_breaker import CircuitBreaker, CircuitoAberto
 from servicos.comum.llm import gerar
 from servicos.comum.resiliencia import TentativasEsgotadas, com_retentativa, com_tempo_limite
-from servicos.geracao import caos
+from servicos.geracao import avaliacao, caos
 
 log = logging.getLogger("pipeline")
 
@@ -97,7 +97,8 @@ def responder(pergunta, top_k=3):
     if not trechos:
         return {"pergunta": pergunta,
                 "resposta": "Nao encontrei nos documentos indexados informacao sobre essa pergunta.",
-                "fontes": [], "contexto": [], "modo_recuperacao": busca.get("modo"),
+                "fontes": [], "avaliacao": None, "contexto": [],
+                "modo_recuperacao": busca.get("modo"),
                 "duracao_ms": round((time.perf_counter() - inicio) * 1000)}
 
     contexto = montar_contexto(trechos)
@@ -112,6 +113,7 @@ def responder(pergunta, top_k=3):
                                "llm", trechos)
 
     return {"pergunta": pergunta, "resposta": resposta, "fontes": fontes(trechos),
+            "avaliacao": avaliacao.avaliar(pergunta, resposta, contexto),
             "contexto": contexto, "modo_recuperacao": busca.get("modo"),
             "duracao_ms": round((time.perf_counter() - inicio) * 1000)}
 
