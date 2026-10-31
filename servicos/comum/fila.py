@@ -17,7 +17,7 @@ import redis
 
 log = logging.getLogger("fila")
 
-URL_REDIS = os.getenv("URL_REDIS", "redis://localhost:6379/0")
+URL_REDIS = os.getenv("URL_REDIS", "redis://127.0.0.1:6379/0")
 
 STREAM_INGESTAO = "stream:ingestao"
 STREAM_PERGUNTAS = "stream:perguntas"

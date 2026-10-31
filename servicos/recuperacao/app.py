@@ -29,9 +29,10 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [recuperacao] %(name
 log = logging.getLogger("recuperacao")
 
 app = FastAPI(title="Recuperacao - C2.A2")
-URL_INGESTAO = os.getenv("URL_INGESTAO", "http://localhost:8001")
+URL_INGESTAO = os.getenv("URL_INGESTAO", "http://127.0.0.1:8001")
 TIMEOUT_INGESTAO = float(os.getenv("TIMEOUT_INGESTAO", "5"))
 FATOR_CANDIDATOS = 3  # busca 3*top_k candidatos para o reranking escolher
+SCORE_MINIMO = float(os.getenv("SCORE_MINIMO", "0.05"))  # abaixo disso o trecho e ruido
 
 disjuntor = CircuitBreaker(nome="ingestao", limite_falhas=3, espera_segundos=15)
 
@@ -116,6 +117,7 @@ def buscar(consulta: Consulta):
                        "score_vetorial": 0.0} for i in itens]
         resultados = reordenar(consulta.pergunta, candidatos, consulta.top_k, peso_vetorial=0.0)
 
+    resultados = [r for r in resultados if r["score"] >= SCORE_MINIMO]
     return {"pergunta": consulta.pergunta, "versao_indice": versao, "modo": modo,
             "indice_em_cache": do_cache, "resultados": resultados}
 
