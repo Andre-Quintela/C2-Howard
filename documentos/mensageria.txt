@@ -1,0 +1,7 @@
+Mensageria é a comunicação entre serviços por meio de um intermediário, o broker, que guarda as mensagens em filas ou tópicos. O produtor publica a mensagem e segue o seu trabalho; o consumidor processa quando puder. Isso desacopla os serviços no tempo: o consumidor pode estar fora do ar no momento da publicação.
+
+Filas absorvem picos de carga. Se chegam mais pedidos do que o consumidor consegue tratar, eles esperam na fila em vez de derrubar o serviço. Para processar mais rápido, basta adicionar mais consumidores ao mesmo grupo, e o broker divide as mensagens entre eles.
+
+A confirmação, ou ack, indica ao broker que a mensagem foi processada. Se o consumidor morrer antes de confirmar, a mensagem volta a ser entregue a outro consumidor. Essa garantia é chamada de entrega pelo menos uma vez, e por isso o processamento deve ser idempotente: tratar a mesma mensagem duas vezes não pode causar efeito duplicado.
+
+Exemplos de brokers são RabbitMQ, Apache Kafka e Redis Streams. No Redis Streams, os grupos de consumidores e os comandos XREADGROUP e XACK implementam a divisão de trabalho e a confirmação.

@@ -1,0 +1,7 @@
+O circuit breaker, ou disjuntor, é um padrão de resiliência que protege um serviço de uma dependência que está falhando. Em vez de insistir em chamadas que vão dar erro, o disjuntor corta as chamadas por um tempo e responde rapidamente com uma falha controlada.
+
+O disjuntor tem três estados. Fechado é o estado normal: as chamadas passam e as falhas consecutivas são contadas. Quando o número de falhas atinge um limite, ele vai para aberto e passa a recusar as chamadas imediatamente. Depois de um tempo de espera, ele entra em meio-aberto e deixa passar uma única chamada de teste: se ela der certo, o circuito fecha; se falhar, volta a abrir.
+
+O disjuntor costuma ser combinado com tempo-limite e retentativa. O tempo-limite impede que uma chamada lenta prenda recursos indefinidamente. A retentativa repete falhas transitórias, de preferência com backoff exponencial e jitter, para não sobrecarregar a dependência que está se recuperando.
+
+Quando o disjuntor está aberto, o sistema deve degradar com elegância: devolver uma resposta parcial, um valor em cache ou uma mensagem clara, em vez de quebrar ou deixar o usuário esperando.

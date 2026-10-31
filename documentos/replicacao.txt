@@ -1,0 +1,7 @@
+Replicação é manter cópias dos mesmos dados em mais de um nó. Ela aumenta a disponibilidade, porque o sistema continua respondendo se uma réplica cair, e pode melhorar a latência de leitura, já que clientes leem da réplica mais próxima.
+
+Na replicação líder-seguidor, todas as escritas passam pelo líder, que repassa as mudanças aos seguidores. Se a cópia for síncrona, a escrita só é confirmada depois que os seguidores gravam; se for assíncrona, o líder confirma antes e os seguidores podem ficar alguns instantes atrasados.
+
+Consistência eventual significa que, sem novas escritas, todas as réplicas acabam convergindo para o mesmo valor. É o modelo usado por muitos bancos distribuídos que priorizam disponibilidade. Consistência forte, por outro lado, garante que toda leitura enxerga a escrita mais recente, ao custo de mais coordenação entre os nós.
+
+Sistemas com quórum exigem que leituras e escritas consultem uma maioria de réplicas. Com N réplicas, escolher W + R > N garante que toda leitura encontra pelo menos uma réplica com o valor mais novo.

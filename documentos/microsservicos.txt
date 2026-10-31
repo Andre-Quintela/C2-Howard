@@ -1,0 +1,7 @@
+Uma arquitetura de microsserviços divide o sistema em serviços pequenos e independentes, cada um responsável por uma capacidade de negócio, com seu próprio processo e, idealmente, seus próprios dados. Cada serviço pode ser implantado, escalado e atualizado sem parar os demais.
+
+A comunicação síncrona entre microsserviços costuma usar REST, com HTTP e JSON, ou gRPC, que usa HTTP/2 e Protocol Buffers para mensagens binárias mais compactas e contratos fortemente tipados. Na comunicação síncrona, quem chama espera a resposta, então a falha de um serviço pode se propagar em cascata.
+
+Um API Gateway é o ponto de entrada único para os clientes. Ele roteia as requisições para o serviço certo e concentra preocupações transversais como autenticação, limite de requisições e registro de acessos.
+
+Para observar um sistema distribuído usam-se verificações de saúde, métricas, logs centralizados e rastreamento distribuído, que acompanha uma requisição atravessando vários serviços.
